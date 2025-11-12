@@ -9,10 +9,3 @@ scrape_configs:
         labels:
           device: 'edge_001'
           intersection: 'mg_road'
-          
-  - job_name: 'infrastructure'
-    static_configs:
-      - targets:
-        - 'mqtt:1883'
-        - 'influxdb:8086'
-        - 'redis:6379'
