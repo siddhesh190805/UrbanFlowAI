@@ -1,0 +1,237 @@
+# Traffic Signal Optimization - Intersection Configuration
+# Copy this file to intersection_config.yaml and customize
+
+# Intersection identity
+intersection_id: "INT_MUM_001"
+intersection_name: "MG Road & Brigade Road Junction"
+city: "Mumbai"
+region: "Maharashtra"
+country: "IN"
+latitude: 19.0760
+longitude: 72.8777
+
+# Traffic mode (indian_direction_based or western_lane_based)
+traffic_mode: "indian_direction_based"
+
+# Camera configuration
+cameras:
+  - id: "cam_north"
+    url: "rtsp://admin:password@192.168.1.101/stream1"
+    direction: "north"
+    fov: 110
+    height: 6.0
+    angle: 50
+    fps: 30
+    resolution: [1920, 1080]
+    enabled: true
+  
+  - id: "cam_south"
+    url: "rtsp://admin:password@192.168.1.102/stream1"
+    direction: "south"
+    fov: 110
+    height: 6.0
+    angle: 50
+    fps: 30
+    resolution: [1920, 1080]
+    enabled: true
+  
+  - id: "cam_east"
+    url: "rtsp://admin:password@192.168.1.103/stream1"
+    direction: "east"
+    fov: 110
+    height: 6.0
+    angle: 50
+    fps: 30
+    resolution: [1920, 1080]
+    enabled: true
+  
+  - id: "cam_west"
+    url: "rtsp://admin:password@192.168.1.104/stream1"
+    direction: "west"
+    fov: 110
+    height: 6.0
+    angle: 50
+    fps: 30
+    resolution: [1920, 1080]
+    enabled: true
+  
+  # Optional: overhead camera for full intersection view
+  - id: "cam_overhead"
+    url: "rtsp://admin:password@192.168.1.105/stream1"
+    direction: "north"  # Can be any, used for overall monitoring
+    fov: 180
+    height: 8.0
+    angle: 90
+    fps: 30
+    resolution: [1920, 1080]
+    enabled: false  # Enable if available
+
+# Signal phase configuration (Indian style)
+signal_phases:
+  - id: 1
+    name: "NS_STRAIGHT_RIGHT"
+    directions: ["north", "south"]
+    movements: ["straight", "right"]
+    min_green: 20
+    max_green: 90
+    yellow_time: 5
+    all_red_time: 3
+    priority: 1
+  
+  - id: 2
+    name: "NS_LEFT"
+    directions: ["north", "south"]
+    movements: ["left"]
+    min_green: 10
+    max_green: 45
+    yellow_time: 4
+    all_red_time: 2
+    priority: 2
+  
+  - id: 3
+    name: "EW_STRAIGHT_RIGHT"
+    directions: ["east", "west"]
+    movements: ["straight", "right"]
+    min_green: 20
+    max_green: 90
+    yellow_time: 5
+    all_red_time: 3
+    priority: 1
+  
+  - id: 4
+    name: "EW_LEFT"
+    directions: ["east", "west"]
+    movements: ["left"]
+    min_green: 10
+    max_green: 45
+    yellow_time: 4
+    all_red_time: 2
+    priority: 2
+  
+  - id: 5
+    name: "PEDESTRIAN_NS"
+    directions: ["north", "south"]
+    movements: ["pedestrian_crossing"]
+    min_green: 15
+    max_green: 30
+    yellow_time: 3
+    all_red_time: 2
+    priority: 3
+  
+  - id: 6
+    name: "PEDESTRIAN_EW"
+    directions: ["east", "west"]
+    movements: ["pedestrian_crossing"]
+    min_green: 15
+    max_green: 30
+    yellow_time: 3
+    all_red_time: 2
+    priority: 3
+
+# Detection zones (in pixels, will be calibrated)
+detection_zones:
+  north:
+    - name: "stop_line_zone"
+      zone_type: "polygon"
+      points: [[100, 300], [400, 300], [400, 350], [100, 350]]
+      area_m2: 75
+      purpose: "queue_at_stop_line"
+    
+    - name: "queue_zone"
+      zone_type: "polygon"
+      points: [[100, 350], [400, 350], [400, 600], [100, 600]]
+      area_m2: 187.5
+      purpose: "queue_depth_measurement"
+  
+  south:
+    - name: "stop_line_zone"
+      zone_type: "polygon"
+      points: [[500, 300], [800, 300], [800, 350], [500, 350]]
+      area_m2: 75
+      purpose: "queue_at_stop_line"
+  
+  east:
+    - name: "stop_line_zone"
+      zone_type: "polygon"
+      points: [[300, 100], [350, 100], [350, 400], [300, 400]]
+      area_m2: 75
+      purpose: "queue_at_stop_line"
+  
+  west:
+    - name: "stop_line_zone"
+      zone_type: "polygon"
+      points: [[550, 100], [600, 100], [600, 400], [550, 400]]
+      area_m2: 75
+      purpose: "queue_at_stop_line"
+
+# AI Model paths
+detector_model_path: "models/yolov8_indian_traffic.pt"
+rl_model_path: "models/ppo_indian_traffic.pth"
+use_tensorrt: false  # Set to true if NVIDIA GPU with TensorRT
+device: "cuda"  # cuda, cpu, or mps (Apple Silicon)
+
+# Detection parameters
+detection_confidence_threshold: 0.5
+tracking_max_age: 30
+tracking_min_hits: 3
+
+# Signal controller settings
+controller_ip: "192.168.1.100"
+controller_port: 161
+controller_protocol: "MOCK"  # MOCK, NTCIP, or MODBUS
+controller_timeout: 5.0
+
+# MQTT settings
+mqtt_enabled: true
+mqtt_broker: "localhost"
+mqtt_port: 1883
+mqtt_username: null
+mqtt_password: null
+mqtt_qos: 1
+mqtt_keepalive: 60
+
+# InfluxDB settings
+influxdb_enabled: true
+influxdb_url: "http://localhost:8086"
+influxdb_token: "my-super-secret-auth-token"
+influxdb_org: "traffic-org"
+influxdb_bucket: "traffic-metrics"
+influxdb_batch_size: 100
+influxdb_flush_interval: 10
+
+# Redis settings
+redis_enabled: true
+redis_host: "localhost"
+redis_port: 6379
+redis_db: 0
+redis_password: null
+redis_max_connections: 50
+
+# Performance settings
+target_fps: 30
+frame_skip: 1
+max_processing_delay_ms: 100.0
+
+# Safety settings
+fail_safe_mode: true
+fail_safe_pattern_id: 1
+emergency_vehicle_priority: true
+pedestrian_priority_enabled: true
+vip_mode_enabled: false
+
+# Logging settings
+log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+log_file: "logs/edge_device.log"
+log_rotation: "100 MB"
+log_retention: "30 days"
+
+# Monitoring settings
+metrics_enabled: true
+metrics_port: 9091
+metrics_export_interval: 10
+
+# Development settings
+simulation_mode: false
+debug_visualization: false
+save_debug_frames: false
+debug_output_dir: "debug_output"

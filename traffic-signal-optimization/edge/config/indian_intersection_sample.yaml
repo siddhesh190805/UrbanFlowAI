@@ -1,0 +1,271 @@
+# Sample Configuration for Indian Traffic Signal Optimization
+# MG Road Junction, Bangalore (Example)
+
+device_id: "edge_blr_mg_road_001"
+
+intersection:
+  intersection_id: "BLR_MG_BRIGADE_001"
+  name: "MG Road - Brigade Road Junction"
+  city: "bangalore"
+  region: "karnataka"
+  location:
+    lat: 12.9716
+    lon: 77.5946
+  
+  # Mixed traffic characteristics (Indian specific)
+  mixed_traffic: true
+  vehicle_types:
+    - "car"
+    - "bus"
+    - "truck"
+    - "motorcycle"
+    - "auto"          # Auto-rickshaw
+    - "bicycle"
+    - "pedestrian"
+  
+  # Four-direction camera setup
+  cameras:
+    - id: "cam_north"
+      name: "North Approach - Residency Road"
+      direction: "north"
+      stream_type: "rtsp"
+      url: "rtsp://192.168.1.101:554/stream1"
+      resolution: [1920, 1080]
+      fps: 30
+      
+      # Physical mounting details
+      fov: 85.0                # Field of view in degrees
+      height: 6.0              # Mounting height in meters
+      angle: 45.0              # Downward angle
+      
+      enabled: true
+      reconnect_attempts: 10
+      reconnect_delay: 3.0
+      buffer_size: 50
+    
+    - id: "cam_south"
+      name: "South Approach - St Marks Road"
+      direction: "south"
+      stream_type: "rtsp"
+      url: "rtsp://192.168.1.102:554/stream1"
+      resolution: [1920, 1080]
+      fps: 30
+      fov: 85.0
+      height: 6.0
+      angle: 45.0
+      enabled: true
+      reconnect_attempts: 10
+      reconnect_delay: 3.0
+      buffer_size: 50
+    
+    - id: "cam_east"
+      name: "East Approach - Brigade Road"
+      direction: "east"
+      stream_type: "rtsp"
+      url: "rtsp://192.168.1.103:554/stream1"
+      resolution: [1920, 1080]
+      fps: 30
+      fov: 85.0
+      height: 6.0
+      angle: 45.0
+      enabled: true
+      reconnect_attempts: 10
+      reconnect_delay: 3.0
+      buffer_size: 50
+    
+    - id: "cam_west"
+      name: "West Approach - Trinity Circle Side"
+      direction: "west"
+      stream_type: "rtsp"
+      url: "rtsp://192.168.1.104:554/stream1"
+      resolution: [1920, 1080]
+      fps: 30
+      fov: 85.0
+      height: 6.0
+      angle: 45.0
+      enabled: true
+      reconnect_attempts: 10
+      reconnect_delay: 3.0
+      buffer_size: 50
+  
+  # Detection zones (Indian traffic - no strict lanes)
+  # Polygons defined in image coordinates
+  detection_zones:
+    - direction: "north"
+      # Polygon covering north approach (trapezoid shape)
+      polygon_points:
+        - [200, 950]    # Bottom left
+        - [800, 950]    # Bottom right
+        - [700, 200]    # Top right
+        - [300, 200]    # Top left
+      pcu_equivalent: 2.5  # Equivalent to 2.5 standard lanes
+    
+    - direction: "south"
+      polygon_points:
+        - [1100, 200]
+        - [1700, 200]
+        - [1600, 950]
+        - [1200, 950]
+      pcu_equivalent: 2.5
+    
+    - direction: "east"
+      polygon_points:
+        - [200, 200]
+        - [200, 800]
+        - [900, 700]
+        - [900, 300]
+      pcu_equivalent: 2.0
+    
+    - direction: "west"
+      polygon_points:
+        - [1000, 300]
+        - [1000, 700]
+        - [1700, 800]
+        - [1700, 200]
+      pcu_equivalent: 2.0
+  
+  # Signal phases (Indian intersection with 6 phases)
+  signal_phases:
+    - id: 1
+      name: "North-South Through"
+      directions: ["north", "south"]
+      movements: ["THROUGH"]
+      min_green: 15       # Minimum 15 seconds
+      max_green: 90       # Maximum 90 seconds
+      yellow_time: 4
+      all_red_time: 2
+      pedestrian_phase: false
+      pedestrian_min_time: 0
+    
+    - id: 2
+      name: "East-West Through"
+      directions: ["east", "west"]
+      movements: ["THROUGH"]
+      min_green: 15
+      max_green: 90
+      yellow_time: 4
+      all_red_time: 2
+      pedestrian_phase: false
+      pedestrian_min_time: 0
+    
+    - id: 3
+      name: "North-East Right Turn"
+      directions: ["north", "east"]
+      movements: ["RIGHT"]
+      min_green: 10
+      max_green: 45
+      yellow_time: 3
+      all_red_time: 2
+      pedestrian_phase: false
+      pedestrian_min_time: 0
+    
+    - id: 4
+      name: "South-West Right Turn"
+      directions: ["south", "west"]
+      movements: ["RIGHT"]
+      min_green: 10
+      max_green: 45
+      yellow_time: 3
+      all_red_time: 2
+      pedestrian_phase: false
+      pedestrian_min_time: 0
+    
+    - id: 5
+      name: "Pedestrian North-South"
+      directions: ["north", "south"]
+      movements: ["PEDESTRIAN"]
+      min_green: 20       # Longer for pedestrian safety
+      max_green: 30
+      yellow_time: 0
+      all_red_time: 2
+      pedestrian_phase: true
+      pedestrian_min_time: 20
+    
+    - id: 6
+      name: "Pedestrian East-West"
+      directions: ["east", "west"]
+      movements: ["PEDESTRIAN"]
+      min_green: 20
+      max_green: 30
+      yellow_time: 0
+      all_red_time: 2
+      pedestrian_phase: true
+      pedestrian_min_time: 20
+
+# AI Models Configuration
+ai_models:
+  detector_model_path: "models/yolov8_indian_traffic.pt"
+  classifier_model_path: "models/vehicle_classifier_india.pt"
+  rl_model_path: "models/ppo_signal_control_india.pth"
+  
+  device: "cuda"  # or "cpu"
+  confidence_threshold: 0.45  # Lower for Indian traffic (more occlusions)
+  nms_threshold: 0.4
+  batch_size: 1
+  use_tensorrt: true
+  
+  # Tracking settings (tuned for Indian traffic)
+  tracking_max_age: 40        # Higher due to occlusions
+  tracking_min_hits: 3
+
+# Signal Controller Configuration
+signal_controller:
+  controller_ip: "192.168.1.200"
+  controller_protocol: "NTCIP"  # or "MODBUS", "RELAY"
+  controller_port: 161
+  fail_safe_mode: true
+  emergency_override: true
+
+# Communication (MQTT)
+communication:
+  mqtt_broker: "mqtt.bangalore.traffic.gov.in"
+  mqtt_port: 1883
+  mqtt_username: "edge_device_001"
+  mqtt_password: "${MQTT_PASSWORD}"  # From environment
+  mqtt_client_id: "edge_blr_mg_road_001"
+  mqtt_qos: 1
+  use_tls: true
+  tls_ca_cert: "/etc/traffic/certs/ca.crt"
+  
+  # Topic templates
+  topic_metrics: "traffic/bangalore/karnataka/{intersection}/metrics"
+  topic_events: "traffic/bangalore/karnataka/{intersection}/events"
+  topic_commands: "traffic/bangalore/karnataka/{intersection}/commands"
+  topic_status: "traffic/bangalore/karnataka/{intersection}/status"
+
+# Storage
+storage:
+  # InfluxDB
+  influxdb_url: "http://regional-server.bangalore.traffic.gov.in:8086"
+  influxdb_token: "${INFLUXDB_TOKEN}"
+  influxdb_org: "bangalore-traffic"
+  influxdb_bucket: "edge-metrics"
+  
+  # Redis
+  redis_host: "localhost"
+  redis_port: 6379
+  redis_db: 0
+  redis_password: "${REDIS_PASSWORD}"
+  
+  # Video buffer
+  video_buffer_path: "/var/traffic/video_buffer"
+  video_retention_hours: 2
+
+# Processing Settings
+target_fps: 30
+rl_update_frequency: 5  # Update decision every 5 seconds
+
+# Logging
+log_level: "INFO"
+log_file: "/var/log/traffic/edge.log"
+log_rotation: "500 MB"
+log_retention: "30 days"
+
+# Monitoring
+enable_monitoring: true
+prometheus_port: 9091
+metrics_export_interval: 10
+
+# Development & Testing
+simulation_mode: false
+debug_visualization: false

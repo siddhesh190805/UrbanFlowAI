@@ -1,0 +1,47 @@
+[Unit]
+Description=Traffic Signal Optimization - Edge Device
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=traffic
+Group=traffic
+WorkingDirectory=/opt/traffic-signal-optimization/edge
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+Environment="TRAFFIC_ENV=production"
+EnvironmentFile=/opt/traffic-signal-optimization/edge/.env
+
+# Start command
+ExecStart=/opt/traffic-signal-optimization/edge/venv/bin/python src/main.py \
+    --config /opt/traffic-signal-optimization/edge/config/intersection_config.yaml
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=200
+StartLimitBurst=5
+
+# Logging
+StandardOutput=append:/var/log/traffic/edge-output.log
+StandardError=append:/var/log/traffic/edge-error.log
+SyslogIdentifier=traffic-edge
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/traffic /var/traffic /opt/traffic-signal-optimization/edge/logs
+
+# Resource limits
+LimitNOFILE=65536
+TasksMax=4096
+MemoryLimit=4G
+CPUQuota=200%
+
+[Install]
+WantedBy=multi-user.target

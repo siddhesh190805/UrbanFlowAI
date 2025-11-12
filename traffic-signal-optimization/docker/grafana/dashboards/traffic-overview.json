@@ -1,0 +1,22 @@
+{
+  "dashboard": {
+    "title": "Traffic Signal Overview",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Vehicle Count by Direction",
+        "type": "timeseries",
+        "targets": [
+          {
+            "query": "from(bucket: \"traffic-metrics\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"traffic_metrics\")\n  |> filter(fn: (r) => r._field == \"vehicle_count\")"
+          }
+        ]
+      }
+    ],
+    "refresh": "5s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}
